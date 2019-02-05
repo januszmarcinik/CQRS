@@ -1,4 +1,7 @@
-﻿using CQRS.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using CQRS.Core;
 
 namespace CQRS.Api
 {
@@ -9,7 +12,11 @@ namespace CQRS.Api
         public FootballRepository(EfContext context)
         {
             this.context = context;
+            context.Database.EnsureCreated();
         }
+
+        public IEnumerable<Team> Query(Func<IQueryable<Team>, IQueryable<Team>> query)
+            => query(context.Teams);
 
         public Team GetTeam(string name)
             => context.Teams.Find(name);

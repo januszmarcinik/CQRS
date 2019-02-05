@@ -22,7 +22,6 @@ namespace CQRS.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IFootballService, FootballService>();
             services.AddScoped<IFootballRepository, FootballRepository>();
 
             services.AddDbContext<EfContext>();

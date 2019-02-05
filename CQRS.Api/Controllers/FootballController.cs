@@ -9,12 +9,10 @@ namespace CQRS.Api.Controllers
     [ApiController]
     public class FootballController : ControllerBase
     {
-        private readonly IFootballService service;
         private readonly IFootballRepository repository;
 
-        public FootballController(IFootballService service, IFootballRepository repository)
+        public FootballController(IFootballRepository repository)
         {
-            this.service = service;
             this.repository = repository;
         }
 
@@ -25,7 +23,12 @@ namespace CQRS.Api.Controllers
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Team>), 200)]
         public IActionResult Get()
-            => Ok(service.GetTeams());
+        {
+            var result = new GetCurrentResultsQueryHandler(repository)
+                .Handle(new GetCurrentResultsQuery());
+
+            return Ok(result);
+        }
 
         /// <summary>
         /// Inserts match result to given teams
