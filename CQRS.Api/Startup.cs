@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using CQRS.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,10 @@ namespace CQRS.Api
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddScoped<IFootballService, FootballService>();
+
+            services.AddDbContext<EfContext>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(c =>
