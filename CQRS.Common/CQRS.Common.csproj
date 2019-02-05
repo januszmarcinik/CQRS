@@ -4,8 +4,4 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CQRS.Common\CQRS.Common.csproj" />
-  </ItemGroup>
-
 </Project>

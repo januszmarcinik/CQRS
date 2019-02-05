@@ -4,31 +4,33 @@ namespace CQRS.Core
 {
     public class MatchResult
     {
-        public string HomeTeamName { get; }
+        private bool resultApplied;
+
+        public Team HomeTeam { get; }
         public int HomeTeamGoals { get; }
 
-        public string AwayTeamName { get; }
+        public Team AwayTeam { get; }
         public int AwayTeamGoals { get; }
 
-        public MatchResult(string homeTeamName, int homeTeamGoals, string awayTeamName, int awayTeamGoals)
+        public MatchResult(Team homeTeam, int homeTeamGoals, Team awayTeam, int awayTeamGoals)
         {
-            if (string.IsNullOrWhiteSpace(homeTeamName)) throw new ArgumentException(nameof(homeTeamName));
-            HomeTeamName = homeTeamName;
-
-            if (homeTeamGoals < 0) throw new ArgumentException(nameof(homeTeamGoals));
+            HomeTeam = homeTeam;
             HomeTeamGoals = homeTeamGoals;
-
-            if (string.IsNullOrWhiteSpace(awayTeamName)) throw new ArgumentException(nameof(awayTeamName));
-            AwayTeamName = awayTeamName;
-
-            if (awayTeamGoals < 0) throw new ArgumentException(nameof(awayTeamGoals));
+            AwayTeam = awayTeam;
             AwayTeamGoals = awayTeamGoals;
+            resultApplied = false;
         }
 
-        public void ApplyTo(Team homeTeam, Team awayTeam)
+        public void ApplyResult(Team homeTeam, Team awayTeam)
         {
+            if (resultApplied)
+            {
+                throw new InvalidOperationException("Match result is already applied.");
+            }
+
             homeTeam.InsertResult(HomeTeamGoals, AwayTeamGoals);
             awayTeam.InsertResult(AwayTeamGoals, HomeTeamGoals);
+            resultApplied = true;
         }
     }
 }

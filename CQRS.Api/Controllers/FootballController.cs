@@ -10,10 +10,12 @@ namespace CQRS.Api.Controllers
     public class FootballController : ControllerBase
     {
         private readonly IFootballService service;
+        private readonly IFootballRepository repository;
 
-        public FootballController(IFootballService service)
+        public FootballController(IFootballService service, IFootballRepository repository)
         {
             this.service = service;
+            this.repository = repository;
         }
 
         /// <summary>
@@ -40,7 +42,7 @@ namespace CQRS.Api.Controllers
         ///     }
         /// 
         /// </remarks>
-        /// <param name="matchResult"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
         /// <response code="202">Match result correctly inserted</response>
         /// <response code="400">Bad request</response>
@@ -49,11 +51,11 @@ namespace CQRS.Api.Controllers
         [ProducesResponseType(202)]
         [ProducesResponseType(400)]
         [ProducesResponseType(404)]
-        public IActionResult Post([FromBody] MatchResult matchResult)
+        public IActionResult Post([FromBody] InsertMatchResultCommand command)
         {
             try
             {
-                service.InsertResult(matchResult);
+                new InsertMatchResultCommandHandler(repository).Handle(command);
                 return Accepted();
             }
             catch (NullReferenceException ex)
