@@ -1,29 +1,27 @@
 ﻿using System;
 using System.Linq;
 using CQRS.Common;
-using CQRS.Core;
 
 namespace CQRS.Api
 {
     internal class Mediator : IMediator
     {
-        private readonly IFootballRepository repository;
+        private readonly IDependencyResolver dependencyResolver;
 
-        public Mediator(IFootballRepository repository)
+        public Mediator(IDependencyResolver dependencyResolver)
         {
-            this.repository = repository;
+            this.dependencyResolver = dependencyResolver;
         }
 
         public void Command<TCommand>(TCommand command) where TCommand : ICommand
         {
-            switch (command)
+            var handler = dependencyResolver.ResolveOrDefault<ICommandHandler<TCommand>>();
+            if (handler == null)
             {
-                case InsertMatchResultCommand c:
-                    new InsertMatchResultCommandHandler(repository).Handle(c);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Command of type '{command.GetType()}' has not registered handler.");
+                throw new InvalidOperationException($"Command of type '{command.GetType()}' has not registered handler.");
             }
+
+            handler.Handle(command);
         }
 
         public TResponse Query<TResponse>(IQuery<TResponse> query)
@@ -37,13 +35,13 @@ namespace CQRS.Api
 
         public TResponse Query<TQuery, TResponse>(TQuery query) where TQuery : IQuery<TResponse>
         {
-            switch (query)
+            var handler = dependencyResolver.ResolveOrDefault<IQueryHandler<TQuery, TResponse>>();
+            if (handler == null)
             {
-                case GetCurrentResultsQuery q:
-                    return (TResponse)new GetCurrentResultsQueryHandler(repository).Handle(q);
-                default:
-                    throw new InvalidOperationException($"Query of type '{query.GetType()}' has not registered handler.");
+                throw new InvalidOperationException($"Query of type '{query.GetType()}' has not registered handler.");
             }
+
+            return handler.Handle(query);
         }
     }
 }

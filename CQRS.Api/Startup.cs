@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using CQRS.Common;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using CQRS.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,12 +21,10 @@ namespace CQRS.Api
         }
 
         public IConfiguration Configuration { get; }
+        public IContainer Container { get; private set; }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IFootballRepository, FootballRepository>();
-
-            services.AddScoped<IMediator, Mediator>();
             services.AddDbContext<EfContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -38,9 +37,17 @@ namespace CQRS.Api
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
+            var containerBuilder = new ContainerBuilder();
+            containerBuilder.Populate(services);
+            containerBuilder.RegisterType<FootballRepository>().As<IFootballRepository>().InstancePerLifetimeScope();
+            containerBuilder.ConfigureMediator();
+
+            Container = containerBuilder.Build();
+            return new AutofacServiceProvider(Container);
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApplicationLifetime appLifetime)
         {
             if (env.IsDevelopment())
             {
@@ -59,6 +66,8 @@ namespace CQRS.Api
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            appLifetime.ApplicationStopped.Register(Container.Dispose);
         }
     }
 }
