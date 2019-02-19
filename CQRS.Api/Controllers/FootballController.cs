@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CQRS.Common;
 using CQRS.Core;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +10,11 @@ namespace CQRS.Api.Controllers
     [ApiController]
     public class FootballController : ControllerBase
     {
-        private readonly IFootballRepository repository;
+        private readonly IMediator mediator;
 
-        public FootballController(IFootballRepository repository)
+        public FootballController(IMediator mediator)
         {
-            this.repository = repository;
+            this.mediator = mediator;
         }
 
         /// <summary>
@@ -24,9 +25,7 @@ namespace CQRS.Api.Controllers
         [ProducesResponseType(typeof(IEnumerable<Team>), 200)]
         public IActionResult Get()
         {
-            var result = new GetCurrentResultsQueryHandler(repository)
-                .Handle(new GetCurrentResultsQuery());
-
+            var result = mediator.Query(new GetCurrentResultsQuery());
             return Ok(result);
         }
 
@@ -58,7 +57,7 @@ namespace CQRS.Api.Controllers
         {
             try
             {
-                new InsertMatchResultCommandHandler(repository).Handle(command);
+                mediator.Command(command);
                 return Accepted();
             }
             catch (NullReferenceException ex)

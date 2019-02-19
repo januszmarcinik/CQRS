@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using CQRS.Common;
 using CQRS.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,7 @@ namespace CQRS.Api
         {
             services.AddScoped<IFootballRepository, FootballRepository>();
 
+            services.AddScoped<IMediator, Mediator>();
             services.AddDbContext<EfContext>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
